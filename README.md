@@ -14,7 +14,7 @@ $ docker run -d --name clickhouse --ulimit nofile=262144:262144 yandex/clickhous
 $ docker run -d --name appmetrica-funnels --link clickhouse -p 5000:5000 -e 'CH_HOST=http://clickhouse:8123' -e 'TOKEN=YOUR_OAUTH_TOKEN' -e 'API_KEYS=["YOUR_APP_ID"]' yandex/appmetrica-funnels
 ```
 
-More information about [ClickHouse server image](https://hud.docker.com/r/yandex/clickhouse-server).
+More information about [ClickHouse server image](https://hub.docker.com/r/yandex/clickhouse-server/).
 
 ### Start with Docker Compose
 Download this repository and edit `docker-compose.yml` file with your Yandex OAuth Token and list of app IDs. Then run:
