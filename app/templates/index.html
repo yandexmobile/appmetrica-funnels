@@ -1,0 +1,145 @@
+<html>
+<!--
+  index.html
+
+  This file is a part of the AppMetrica.
+
+  Copyright © 2017 YANDEX
+
+  You may not use this file except in compliance with the License.
+  You may obtain a copy of the License at https://yandex.com/legal/metrica_termsofuse/
+-->
+<head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body>
+<div class="container">
+    <div style="display: float">
+        <a class="link link_inner_yes" href="https://clubs.at.yandex-team.ru/appmetrica/">
+            <img style="background: rgba(0, 0, 0, 0) url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MiAzNSIgd2lkdGg9IjUyIiBoZWlnaHQ9IjM1Ij48cGF0aCBmaWxsPSIjZTUyNjIwIiBkPSJNMTggMjNIMHYxMmgxOHoiLz48cGF0aCBmaWxsPSIjY2MxNDE3IiBkPSJNMTMgMjNoNXYxMmgtNXoiLz48cGF0aCBmaWxsPSIjZmZjYzA3IiBkPSJNNTIgMEgzNXYzNWgxN3oiLz48cGF0aCBmaWxsPSIjZWJiYTI1IiBkPSJNNDggMGg0djM1aC00eiIvPjxwYXRoIGZpbGw9IiM0Nzc1YjkiIGQ9Ik0zNSAxMkgxOHYyM2gxN3oiLz48cGF0aCBmaWxsPSIjM2I1Zjk1IiBkPSJNMzAgMTJoNXYyM2gtNXoiLz48L3N2Zz4=') no-repeat scroll 50% 50% / 45px 28px; height: 28px; margin-right: 10px; margin-top: 30px; width: 45px;"
+                 src="//yastatic.net/lego/_/La6qi18Z8LwgnZdsAr1qy1GwCwo.gif" alt="">
+            <span style=": ; display: inline-block; height: 23px; letter-spacing: 0.01em; vertical-align: bottom; color: rgb(0, 0, 0) ! important; font-family: textbook,arial,helvetica,sans-serif; font-size: 24px; white-space: nowrap;">AppMetrica</span>
+        </a>
+    </div>
+    <h2 style="margin-top: 30px">Fun With Funnels</h2>
+    <h5 style="margin-top: 30px">
+        Report based on data collected by AppMetrica.
+    </h5>
+    <form style="margin-top: 30px" action="/result" method="GET" role="form">
+        {{form.hidden_tag()}}
+        <div class="row">
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label for="start_date">Start Date</label>
+                    {{form.start_date(class="form-control", id="start_date")}}
+                    <span class="help-block">Date format is %Y-%m-%d, for example, 2017-02-26</span>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label for="end_date">End Date</label>
+                    {{form.end_date(class="form-control", id="end_date")}}
+                    <span class="help-block">Date format is %Y-%m-%d, for example, 2017-02-26</span>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label for="api_key">API Key</label>
+                    {{form.api_key(class="form-control", id="api_key")}}
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label for="country">Country</label>
+                    {{form.country(class="form-control", id="country")}}
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label for="platform">Platform</label>
+                    {{form.platform(class="form-control", id="platform")}}
+                </div>
+            </div>
+        </div>
+        <h3>Funnel Steps</h3>
+        <p>Specify up to 10 steps of funnel in the fields below. Each step should be defined as one or several possible
+            events (event names separated by commas).</p>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="step0">Step 1</label>
+                    {{form.step0(class="form-control", id="step0")}}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="step1">Step 2</label>
+                    {{form.step1(class="form-control", id="step1")}}
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="step2">Step 3</label>
+                    {{form.step2(class="form-control", id="step2")}}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="step3">Step 4</label>
+                    {{form.step3(class="form-control", id="step3")}}
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="step4">Step 5</label>
+                    {{form.step4(class="form-control", id="step4")}}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="step5">Step 6</label>
+                    {{form.step5(class="form-control", id="step5")}}
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="step6">Step 7</label>
+                    {{form.step6(class="form-control", id="step6")}}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="step7">Step 8</label>
+                    {{form.step7(class="form-control", id="step7")}}
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="step8">Step 9</label>
+                    {{form.step8(class="form-control", id="step8")}}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="step9">Step 10</label>
+                    {{form.step9(class="form-control", id="step9")}}
+                </div>
+            </div>
+        </div>
+        <input type='submit' value="Query" class="btn btn-primary btn-sm"/>
+    </form>
+</div>
+</body>
+</html>

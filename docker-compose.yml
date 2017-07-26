@@ -1,0 +1,19 @@
+version: '3'
+services:
+  web:
+    image: 'yandex/appmetrica-funnels'
+    build: './'
+    ports:
+     - '5000:5000'
+    environment:
+     - CH_HOST=http://clickhouse:8123
+     - TOKEN=ENTER_OAUTH_TOKEN_HERE
+     - API_KEYS=["ENTER_API_KEY_HERE"]
+    depends_on:
+     - clickhouse
+  clickhouse:
+    image: 'yandex/clickhouse-server'
+    volumes:
+      - db-data:/var/lib/clickhouse
+volumes:
+  db-data:
