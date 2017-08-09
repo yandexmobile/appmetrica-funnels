@@ -15,11 +15,11 @@ from wtforms import TextField, SelectField
 
 COUNTRY_CHOICES = [
     (u'', u'World'),
-    (u'225', u'Russia'),
-    (u'983', u'Turkey'),
-    (u'187', u'Ukraine'),
-    (u'149', u'Belarus'),
-    (u'159', u'Kazakhstan')
+    (u'RU', u'Russia'),
+    (u'TR', u'Turkey'),
+    (u'UA', u'Ukraine'),
+    (u'BY', u'Belarus'),
+    (u'KZ', u'Kazakhstan')
 ]
 
 PLATFORM_CHOICES = [
