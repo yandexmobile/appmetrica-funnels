@@ -38,6 +38,11 @@ if 'LOGS_API_HISTORY_PERIOD' not in os.environ:
 else:
     LOGS_API_HISTORY_PERIOD = int(os.environ['LOGS_API_HISTORY_PERIOD'])
 
+if 'PROCESSING_ROWS' not in os.environ:
+    PROCESSING_ROWS = 10000
+else:
+    PROCESSING_ROWS = int(os.environ['PROCESSING_ROWS'])
+
 CH_DATABASE = 'mobile'
 CH_TABLE = 'events_all'
 
@@ -53,25 +58,6 @@ def get_create_date(api_key, token):
         app_details = json.loads(r.text)
         if ('application' in app_details) and ('create_date' in app_details['application']):
             create_date = app_details['application']['create_date']
-
-
-def load_logs_api_data(api_key, date1, date2, token):
-    url_tmpl = 'https://api.appmetrica.yandex.ru/logs/v1/export/events.csv?application_id={api_key}&date_since={date1}%2000%3A00%3A00&date_until={date2}%2023%3A59%3A59&date_dimension=default&fields=event_name%2Cevent_timestamp%2Cappmetrica_device_id%2Cos_name%2Ccountry_iso_code%2Ccity&oauth_token={token}'
-    url = url_tmpl.format(api_key=api_key, date1=date1, date2=date2, token=token)
-
-    r = requests.get(url)
-
-    while r.status_code != 200:
-        print r.status_code,
-        if r.status_code != 202:
-            raise ValueError, r.text
-
-        time.sleep(10)
-        r = requests.get(url)
-
-    df = pd.read_csv(StringIO.StringIO(r.text))
-    df['event_date'] = map(lambda x: datetime.datetime.fromtimestamp(x).strftime('%Y-%m-%d'), df.event_timestamp)
-    return df
 
 
 def get_clickhouse_data(query, host=CH_HOST):
@@ -204,26 +190,57 @@ def insert_data_to_prod(db, table):
 
     get_clickhouse_data(q)
 
+def load_logs_api_data(api_key, date1, date2, token):
+    url_tmpl = 'https://api.appmetrica.yandex.ru/logs/v1/export/events.csv?application_id={api_key}&date_since={date1}%2000%3A00%3A00&date_until={date2}%2023%3A59%3A59&date_dimension=default&fields=event_name%2Cevent_timestamp%2Cappmetrica_device_id%2Cos_name%2Ccountry_iso_code%2Ccity&oauth_token={token}'
+    url = url_tmpl.format(api_key=api_key, date1=date1, date2=date2, token=token)
+
+    r = requests.get(url)
+
+    while r.status_code != 200:
+        print r.status_code,
+        if r.status_code != 202:
+            raise ValueError, r.text
+
+        time.sleep(10)
+        r = requests.get(url)
+
+    resp_rows = r.text.split('\n')
+    header = resp_rows[0]
+    resp_rows = resp_rows[1:]
+
+    num_rows = len(resp_rows)
+    num_iters = int(num_rows/PROCESSING_ROWS)
+
+    for i in range(num_iters + 1):
+        if i == num_iters:
+            text = header + '\n' + '\n'.join(resp_rows[num_iters*PROCESSING_ROWS:])
+        else:
+            text = header + '\n' +  '\n'.join(resp_rows[i*PROCESSING_ROWS:(i+1)*PROCESSING_ROWS])
+
+        df = pd.read_csv(StringIO.StringIO(text))
+        df['event_date'] = map(lambda x: datetime.datetime.fromtimestamp(x).strftime('%Y-%m-%d'), df.event_timestamp)
+        yield df
+
 
 def process_date(date, token, api_key, db, table):
-    df = load_logs_api_data(api_key, date, date, token)
-    df = df.drop_duplicates()
-    df['api_key'] = api_key
+    for df in load_logs_api_data(api_key, date, date, token):
+        df = df.drop_duplicates()
+        df['api_key'] = api_key
 
-    drop_table('default', 'tmp_data')
-    drop_table('default', 'tmp_data_ins')
+        drop_table('default', 'tmp_data')
+        drop_table('default', 'tmp_data_ins')
 
-    table_create('default', 'tmp_data')
+        table_create('default', 'tmp_data')
 
-    upload(
-        'tmp_data',
-        df[['event_date', 'appmetrica_device_id', 'event_name', 'event_timestamp',
-            'os_name', 'country_iso_code', 'api_key']].to_csv(index=False, sep='\t')
-    )
-    create_tmp_table_for_insert(db, table, date, date)
-    insert_data_to_prod(db, table)
-    drop_table('default', 'tmp_data')
-    drop_table('default', 'tmp_data_ins')
+        upload(
+            'tmp_data',
+            df[['event_date', 'appmetrica_device_id', 'event_name', 'event_timestamp',
+                'os_name', 'country_iso_code', 'api_key']].to_csv(index=False, sep='\t')
+        )
+        create_tmp_table_for_insert(db, table, date, date)
+        insert_data_to_prod(db, table)
+        drop_table('default', 'tmp_data')
+        drop_table('default', 'tmp_data_ins')
 
 
 def main(first_flag=False):
