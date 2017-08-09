@@ -105,7 +105,7 @@ def get_funnel_clickhouse(date1, date2, api_key, platform, country, global_condi
         platform_filter = ""
 
     if country != '':
-        country_filter = "\nAND regionToCountry(RegionID) = {country}".format(country=country)
+        country_filter = "\nAND Country = '{country}'".format(country=country)
     else:
         country_filter = ""
 
