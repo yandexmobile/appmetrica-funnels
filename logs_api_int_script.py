@@ -190,10 +190,11 @@ def insert_data_to_prod(db, table):
 
     get_clickhouse_data(q)
 
-def load_logs_api_data(api_key, date1, date2, token):
+def process_date(date, token, api_key, db, table):
     url_tmpl = 'https://api.appmetrica.yandex.ru/logs/v1/export/events.csv?application_id={api_key}&date_since={date1}%2000%3A00%3A00&date_until={date2}%2023%3A59%3A59&date_dimension=default&fields=event_name%2Cevent_timestamp%2Cappmetrica_device_id%2Cos_name%2Ccountry_iso_code%2Ccity&oauth_token={token}'
-    url = url_tmpl.format(api_key=api_key, date1=date1, date2=date2, token=token)
+    url = url_tmpl.format(api_key=api_key, date1=date, date2=date, token=token)
 
+    print url
     r = requests.get(url)
 
     while r.status_code != 200:
@@ -204,27 +205,9 @@ def load_logs_api_data(api_key, date1, date2, token):
         time.sleep(10)
         r = requests.get(url)
 
-    resp_rows = r.text.split('\n')
-    header = resp_rows[0]
-    resp_rows = resp_rows[1:]
-
-    num_rows = len(resp_rows)
-    num_iters = int(num_rows/PROCESSING_ROWS)
-
-    for i in range(num_iters + 1):
-        if i == num_iters:
-            text = header + '\n' + '\n'.join(resp_rows[num_iters*PROCESSING_ROWS:])
-        else:
-            text = header + '\n' +  '\n'.join(resp_rows[i*PROCESSING_ROWS:(i+1)*PROCESSING_ROWS])
-
-        df = pd.read_csv(StringIO.StringIO(text))
-        df['event_date'] = map(lambda x: datetime.datetime.fromtimestamp(x).strftime('%Y-%m-%d'), df.event_timestamp)
-        yield df
-
-
-def process_date(date, token, api_key, db, table):
-    for df in load_logs_api_data(api_key, date, date, token):
+    for df in pd.read_csv(url, chunksize=PROCESSING_ROWS, iterator=True):
         df = df.drop_duplicates()
+        df['event_date'] = map(lambda x: datetime.datetime.fromtimestamp(x).strftime('%Y-%m-%d'), df.event_timestamp)
         df['api_key'] = api_key
 
         drop_table('default', 'tmp_data')
