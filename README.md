@@ -33,7 +33,7 @@ Environment variables:
 * `LOGS_API_FETCH_INTERVAL` - Interval of time in seconds between events fetches from Logs API. (default: 43200 aka 12 hours)
 * `LOGS_API_HISTORY_PERIOD` - Days count for the first events fetch. (default: 30)
 * `FLASK_PORT` - Port for Web UI. (default: 5000)
-* `PROCESSING ROWS` - Size of chunks to process. (default: 10000)
+* `PROCESSING_ROWS` - Size of chunks to process. (default: 10000)
 
 ## License
 License agreement on use of Yandex AppMetrica is available at [EULA site][LICENSE]
