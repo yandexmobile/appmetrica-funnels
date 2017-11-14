@@ -16,6 +16,10 @@ from flask_bootstrap import Bootstrap
 import utils
 from forms import ParamsForm
 
+import sys  
+reload(sys)  
+sys.setdefaultencoding('utf8')
+
 app = Flask(__name__)
 app.debug = True
 app.secret_key = 's3cr3t'
