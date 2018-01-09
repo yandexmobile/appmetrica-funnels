@@ -291,9 +291,9 @@ def get_funnel_result(date1, date2, api_key, platform, country, steps):
     df['step'] = df[filter(lambda x: x != 'devices', df.columns)].sum(axis=1)
 
     df = df[df.step != 0]
-    df.sort_values('devices', inplace = True)
+    df.sort_values('step', ascending=False, inplace = True)
     df['devices_cum'] = df.devices.cumsum()
-    df.sort_values('devices', ascending=False, inplace=True)
+    df.sort_values('step', inplace=True)
 
     html = get_funnel_plotly(df.devices_cum.values)
     return html, query
