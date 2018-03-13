@@ -44,6 +44,13 @@ def get_result():
     api_key = params['api_key']
     platform = params['platform']
     country = params['country']
+    version_filters_param = params['version_filters_param']
+    version_filters_limit = params['version_filters_limit']
+    version_filters_condition = params['version_filters_condition']
+    if (version_filters_param == '') or (version_filters_limit == '') or (version_filters_condition == ''):
+        version_filters_param = ''
+        version_filters_limit = ''
+        version_filters_condition = ''
 
     steps = []
     for i in range(10):
@@ -54,7 +61,7 @@ def get_result():
         cur_steps = map(lambda x: x.strip(), cur_steps)
         steps.append(cur_steps)
 
-    funnel, query = utils.get_funnel_result(start_date, end_date, api_key, platform, country, steps)
+    funnel, query = utils.get_funnel_result(start_date, end_date, api_key, platform, country, steps, version_filters_param, version_filters_condition, version_filters_limit)
 
     return render_template("result.html",
                            query=query,
@@ -64,6 +71,9 @@ def get_result():
                            platform=platform,
                            api_key=api_key,
                            country=country,
+                           version_filters_param = version_filters_param,
+                           version_filters_condition = version_filters_condition, 
+                           version_filters_limit = version_filters_limit,
                            step0=params['step0'],
                            step1=params['step1'],
                            step2=params['step2'],

@@ -126,7 +126,9 @@ def table_create(db, table):
         EventTimestamp UInt64,
         AppPlatform String,
         Country String,
-        APIKey UInt64
+        APIKey UInt64, 
+        AppVersionName String,
+        AppBuildNumber UInt32
     )
     ENGINE = MergeTree(EventDate, cityHash64(DeviceID), (EventDate, cityHash64(DeviceID)), 8192)
     '''.format(
@@ -148,9 +150,11 @@ def create_tmp_table_for_insert(db, table, date1, date2):
             EventTimestamp,
             AppPlatform,
             Country,
-            APIKey
+            APIKey,
+            AppVersionName, 
+            AppBuildNumber
         FROM tmp_data
-        WHERE NOT ((EventDate, DeviceID, EventName, EventTimestamp, AppPlatform, Country, APIKey) GLOBAL IN
+        WHERE NOT ((EventDate, DeviceID, EventName, EventTimestamp, AppPlatform, Country, APIKey, AppVersionName, AppBuildNumber) GLOBAL IN
             (SELECT
                 EventDate,
                 DeviceID,
@@ -158,7 +162,9 @@ def create_tmp_table_for_insert(db, table, date1, date2):
                 EventTimestamp,
                 AppPlatform,
                 Country,
-                APIKey
+                APIKey,
+                AppVersionName,
+                AppBuildNumber
             FROM {db}.{table}
             WHERE EventDate >= '{date1}' AND EventDate <= '{date2}'))
     '''.format(
@@ -181,7 +187,9 @@ def insert_data_to_prod(db, table):
                 EventTimestamp,
                 AppPlatform,
                 Country,
-                APIKey
+                APIKey,
+                AppVersionName,
+                AppBuildNumber
             FROM tmp_data_ins
     '''.format(
         db=db,
@@ -191,7 +199,7 @@ def insert_data_to_prod(db, table):
     get_clickhouse_data(q)
 
 def process_date(date, token, api_key, db, table):
-    url_tmpl = 'https://api.appmetrica.yandex.ru/logs/v1/export/events.csv?application_id={api_key}&date_since={date1}%2000%3A00%3A00&date_until={date2}%2023%3A59%3A59&date_dimension=default&fields=event_name%2Cevent_timestamp%2Cappmetrica_device_id%2Cos_name%2Ccountry_iso_code%2Ccity&oauth_token={token}'
+    url_tmpl = 'https://api.appmetrica.yandex.ru/logs/v1/export/events.csv?application_id={api_key}&date_since={date1}%2000%3A00%3A00&date_until={date2}%2023%3A59%3A59&date_dimension=default&fields=event_name%2Cevent_timestamp%2Cappmetrica_device_id%2Cos_name%2Ccountry_iso_code%2Ccity%2Capp_version_name%2Capp_build_number&oauth_token={token}'
     url = url_tmpl.format(api_key=api_key, date1=date, date2=date, token=token)
 
     # print url
@@ -218,7 +226,7 @@ def process_date(date, token, api_key, db, table):
         upload(
             'tmp_data',
             df[['event_date', 'appmetrica_device_id', 'event_name', 'event_timestamp',
-                'os_name', 'country_iso_code', 'api_key']].to_csv(index=False, sep='\t')
+                'os_name', 'country_iso_code', 'api_key', 'app_version_name', 'app_build_number']].to_csv(index=False, sep='\t')
         )
         create_tmp_table_for_insert(db, table, date, date)
         insert_data_to_prod(db, table)

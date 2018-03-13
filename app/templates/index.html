@@ -65,6 +65,27 @@
                 </div>
             </div>
         </div>
+        <h4>Filter by app version</h4>
+        <div class="row">
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label for="version_filters_param">Value</label>
+                    {{form.version_filters_param(class="form-control", id="version_filters_param")}}
+                </div>
+            </div>
+            <div class="col-md-1">
+                <div class="form-group">
+                    <label for="version_filters_condition">Condition</label>
+                    {{form.version_filters_condition(class="form-control", id="version_filters_condition")}}
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label for="version_filters_limit">Limit</label> 
+                    {{form.version_filters_limit(class="form-control", id="version_filters_limit")}}
+                </div>
+            </div>
+        </div>
         <h3>Funnel Steps</h3>
         <p>Specify up to 10 steps of funnel in the fields below. Each step should be defined as one or several possible
             events (event names separated by commas).</p>

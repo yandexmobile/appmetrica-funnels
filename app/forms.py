@@ -29,6 +29,21 @@ PLATFORM_CHOICES = [
     (u'WindowsPhone', u'Windows Phone')
 ]
 
+VERSION_FILTERS_PARAM = [
+    (u'', u'Total'),
+    (u'AppVersionName', u'App Version'),
+    (u'AppBuildNumber', u'Build Number')
+]
+
+VERSION_FILTERS_CONDITION = [
+    (u'', u''),
+    (u'>=', u'>='),
+    (u'=', u'='),
+    (u'<=', u'<='),
+    (u'>', u'>'),
+    (u'<', u'<')
+]
+
 
 class ParamsForm(Form):
     start_date = TextField(u'Start Date')
@@ -36,6 +51,9 @@ class ParamsForm(Form):
     api_key = TextField(u'API Key')
     platform = SelectField(u'Platform', choices=PLATFORM_CHOICES)
     country = SelectField(u'Country', choices=COUNTRY_CHOICES)
+    version_filters_param = SelectField(u'VersionFilterParam', choices = VERSION_FILTERS_PARAM)
+    version_filters_condition = SelectField(u'VersionFilterCondition', choices = VERSION_FILTERS_CONDITION)
+    version_filters_limit = TextField(u'Limit')
 
     step0 = TextField(u'Step0')
     step1 = TextField(u'Step1')
