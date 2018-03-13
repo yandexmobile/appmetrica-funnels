@@ -72,7 +72,8 @@ def get_clickhouse_df(query, host=HOST, connection_timeout=1500):
 
 
 def get_funnel_clickhouse(date1, date2, api_key, platform, country, global_condition, steps_achieved_select,
-                          steps_achieved_groupby, steps_indexes):
+                          steps_achieved_groupby, steps_indexes,
+                          version_filters_param, version_filters_condition, version_filters_limit):
     q_tmpl = '''
     SELECT
         count() as devices,
@@ -91,7 +92,7 @@ def get_funnel_clickhouse(date1, date2, api_key, platform, country, global_condi
             FROM mobile.events_all
             WHERE EventDate >= '{start_date}'
                 AND EventDate <= '{end_date}' {platform_filter}
-                AND APIKey = {api_key} {country_filter}
+                AND APIKey = {api_key} {country_filter} {version_filter}
                 AND ({global_condition})
             ORDER BY EventTimestamp)
         GROUP BY DeviceID)
@@ -109,12 +110,29 @@ def get_funnel_clickhouse(date1, date2, api_key, platform, country, global_condi
     else:
         country_filter = ""
 
+    
+    if version_filters_param == 'AppBuildNumber':
+        version_filter = "\n AND {param} {condition} {limit}".format(
+                param = version_filters_param,
+                condition = version_filters_condition,
+                limit = version_filters_limit
+            )
+    elif version_filters_param == 'AppVersionName':
+        version_filter = "\n AND {param} {condition} '{limit}'".format(
+                param = version_filters_param,
+                condition = version_filters_condition,
+                limit = version_filters_limit
+            )
+    else:
+        version_filter = ""
+
     q = q_tmpl.format(
         start_date=date1,
         end_date=date2,
         platform_filter=platform_filter,
         api_key=api_key,
         country_filter=country_filter,
+        version_filter=version_filter,
         global_condition=global_condition,
         steps_achieved_select=steps_achieved_select,
         steps_achieved_groupby=steps_achieved_groupby,
@@ -245,7 +263,7 @@ def get_funnel_plotly(values):
     return html
 
 
-def get_funnel_result(date1, date2, api_key, platform, country, steps):
+def get_funnel_result(date1, date2, api_key, platform, country, steps, version_filters_param, version_filters_condition, version_filters_limit):
     all_events = set()
     step_conditions = []
     for step_items in steps:
@@ -286,7 +304,7 @@ def get_funnel_result(date1, date2, api_key, platform, country, steps):
     steps_indexes = ',\n'.join(steps_indexes_lst)
 
     df, query = get_funnel_clickhouse(date1, date2, api_key, platform, country, global_condition, steps_achieved_select,
-                                      steps_achieved_groupby, steps_indexes)
+                                      steps_achieved_groupby, steps_indexes, version_filters_param, version_filters_condition, version_filters_limit)
 
     df['step'] = df[filter(lambda x: x != 'devices', df.columns)].sum(axis=1)
 
