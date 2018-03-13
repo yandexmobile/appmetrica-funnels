@@ -202,7 +202,7 @@ def process_date(date, token, api_key, db, table):
     url_tmpl = 'https://api.appmetrica.yandex.ru/logs/v1/export/events.csv?application_id={api_key}&date_since={date1}%2000%3A00%3A00&date_until={date2}%2023%3A59%3A59&date_dimension=default&fields=event_name%2Cevent_timestamp%2Cappmetrica_device_id%2Cos_name%2Ccountry_iso_code%2Ccity%2Capp_version_name%2Capp_build_number&oauth_token={token}'
     url = url_tmpl.format(api_key=api_key, date1=date, date2=date, token=token)
 
-    print url
+    # print url
     r = requests.get(url)
 
     while r.status_code != 200:
