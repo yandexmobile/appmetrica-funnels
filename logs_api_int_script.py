@@ -17,6 +17,7 @@ import os
 import time
 import pandas as pd
 import requests
+from io import StringIO
 
 if 'CH_HOST' not in os.environ:
     CH_HOST = 'http://localhost:8123'
@@ -47,12 +48,15 @@ CH_DATABASE = 'mobile'
 CH_TABLE = 'events_all'
 
 
+def auth_headers(token):
+    return {'Authorization': 'OAuth {token}'.format(token=token)}
+
+
 def get_create_date(api_key, token):
-    app_details_url = 'https://api.appmetrica.yandex.ru/management/v1/application/{id}?oauth_token={token}'.format(
-        id=api_key,
-        token=token
+    app_details_url = 'https://api.appmetrica.yandex.ru/management/v1/application/{id}'.format(
+        id=api_key
     )
-    r = requests.get(app_details_url)
+    r = requests.get(app_details_url, headers=auth_headers(token))
     create_date = None
     if r.status_code == 200:
         app_details = json.loads(r.text)
@@ -126,7 +130,7 @@ def table_create(db, table):
         EventTimestamp UInt64,
         AppPlatform String,
         Country String,
-        APIKey UInt64, 
+        APIKey UInt64,
         AppVersionName String,
         AppBuildNumber UInt32
     )
@@ -151,7 +155,7 @@ def create_tmp_table_for_insert(db, table, date1, date2):
             AppPlatform,
             Country,
             APIKey,
-            AppVersionName, 
+            AppVersionName,
             AppBuildNumber
         FROM tmp_data
         WHERE NOT ((EventDate, DeviceID, EventName, EventTimestamp, AppPlatform, Country, APIKey, AppVersionName, AppBuildNumber) GLOBAL IN
@@ -199,11 +203,11 @@ def insert_data_to_prod(db, table):
     get_clickhouse_data(q)
 
 def process_date(date, token, api_key, db, table):
-    url_tmpl = 'https://api.appmetrica.yandex.ru/logs/v1/export/events.csv?application_id={api_key}&date_since={date1}%2000%3A00%3A00&date_until={date2}%2023%3A59%3A59&date_dimension=default&fields=event_name%2Cevent_timestamp%2Cappmetrica_device_id%2Cos_name%2Ccountry_iso_code%2Ccity%2Capp_version_name%2Capp_build_number&oauth_token={token}'
-    url = url_tmpl.format(api_key=api_key, date1=date, date2=date, token=token)
+    url_tmpl = 'https://api.appmetrica.yandex.ru/logs/v1/export/events.csv?application_id={api_key}&date_since={date1}%2000%3A00%3A00&date_until={date2}%2023%3A59%3A59&date_dimension=default&fields=event_name%2Cevent_timestamp%2Cappmetrica_device_id%2Cos_name%2Ccountry_iso_code%2Ccity%2Capp_version_name%2Capp_build_number'
+    url = url_tmpl.format(api_key=api_key, date1=date, date2=date)
 
     # print url
-    r = requests.get(url)
+    r = requests.get(url, headers=auth_headers(token))
 
     while r.status_code != 200:
         print r.status_code,
@@ -211,9 +215,9 @@ def process_date(date, token, api_key, db, table):
             raise ValueError, r.text
 
         time.sleep(10)
-        r = requests.get(url)
+        r = requests.get(url, headers=auth_headers(token))
 
-    for df in pd.read_csv(url, chunksize=PROCESSING_ROWS, iterator=True):
+    for df in pd.read_csv(StringIO(r.content.decode('utf-8')), chunksize=PROCESSING_ROWS, iterator=True):
         df = df.drop_duplicates()
         df['event_date'] = map(lambda x: datetime.datetime.fromtimestamp(x).strftime('%Y-%m-%d'), df.event_timestamp)
         df['api_key'] = api_key

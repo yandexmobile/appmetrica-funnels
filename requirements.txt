@@ -1,4 +1,4 @@
-requests==2.14.2
+requests==2.21.0
 pandas==0.20.1
 numpy==1.12.1
 flask_bootstrap==3.3.7.1
